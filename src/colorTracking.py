@@ -59,14 +59,17 @@ while(1):
     upper_neon = np.array([47, 255, 255], dtype=np.uint8)
     # lower_white = np.array([0, 0, 200], dtype=np.uint8)
     # upper_white = np.array([255,20,255], dtype=np.uint8)
-
+    upper_color = upper_neon
+    lower_color = lower_neon
     # Threshold the HSV image to get only blue colors
-    mask = cv2.inRange(hsv, lower_neon, upper_neon)
+    mask = cv2.inRange(hsv, lower_color, upper_color)
     # blur = cv2.blur(gray,(5,5))
     # dilation = cv2.dilate(mask,kernel,iterations = 1)
     #opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     closing = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     closing = cv2.morphologyEx(closing, cv2.MORPH_CLOSE, kernel)
+    closing = cv2.morphologyEx(closing, cv2.MORPH_CLOSE, kernel)
+    closing = cv2.dilate(closing,kernel, iterations = 2)
 
     # ret,thresh = cv2.threshold(closing,127,255,0)
     contours, hierarchy = cv2.findContours(closing,1,2)
@@ -77,7 +80,7 @@ while(1):
         radius = int(radius)
         cx = x
         cy = y
-        # cv2.circle(frame,center,radius,(0,255,0),2)
+        cv2.circle(frame,center,radius,(0,255,0),2)
         coordinates.append(center)
         if(len(coordinates) > 30):
             coordinates.pop(0)
@@ -117,12 +120,17 @@ while(1):
    
     cv2.imshow('frame',frame)
     # cv2.imshow('grey',gray)
-    # cv2.imshow('mask',mask)
+    cv2.imshow('mask',mask)
     #cv2.imshow('closing', closing)
 
     #cv2.imshow('res',res)
-    k = cv2.waitKey(5) & 0xFF
-    if k == 27:
+    # k = cv2.waitKey(5) & 0xFF
+    # if k == 27:
+    #     break
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+    if cv2.waitKey(1) & 0xFF == ord('z'):
+        count = 0
 
 cv2.destroyAllWindows()
