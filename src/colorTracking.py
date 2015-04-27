@@ -47,7 +47,7 @@ while(1):
     kernel = np.ones((5,5),np.uint8)
 
 
-
+    # Threshold the HSV image to get only specific colors
     # define range of blue color in HSV
     # lower_blue = np.array([110, 50, 50], dtype=np.uint8)
     # upper_blue = np.array([130,255,255], dtype=np.uint8)
@@ -61,19 +61,16 @@ while(1):
     # upper_white = np.array([255,20,255], dtype=np.uint8)
     upper_color = upper_neon
     lower_color = lower_neon
-    # Threshold the HSV image to get only blue colors
+    
     mask = cv2.inRange(hsv, lower_color, upper_color)
-    # blur = cv2.blur(gray,(5,5))
-    # dilation = cv2.dilate(mask,kernel,iterations = 1)
-    #opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     closing = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     closing = cv2.morphologyEx(closing, cv2.MORPH_CLOSE, kernel)
     closing = cv2.morphologyEx(closing, cv2.MORPH_CLOSE, kernel)
     closing = cv2.dilate(closing,kernel, iterations = 2)
+    closing = cv2.erode(closing,kernel, iterations = 4)
 
-    # ret,thresh = cv2.threshold(closing,127,255,0)
     contours, hierarchy = cv2.findContours(closing,1,2)
-    #cv2.drawContours(frame, contours, -1, (0,255,0), 3)
+   
     try:
         (x,y),radius = cv2.minEnclosingCircle(contours[0])
         center = (int(x),int(y))
@@ -88,45 +85,20 @@ while(1):
         
     except IndexError:
         pass    
-    # for c in coordinates:
-    #     cv2.circle(frame,c,2,(0,255,0),2)
+
     cv2.circle(frame,centroids[0],2,(255,0,0),2)
     cv2.circle(frame,centroids[1],2,(0,255,0),2)
     cv2.circle(frame,centroids[2],2,(0,0,255),2)
     if( (( centroids[0][1] - centroids[1][1] ) > 50) and (( centroids[1][1] - centroids[2][1] ) > 50)):
         count = count + 1
-    # x,y,w,h = cv2.boundingRect(contours[0])
-    # cv2.rectangle(closing,(x,y),(x+w,y+h),(0,255,0),2)
-    # circles = cv2.HoughCircles(closing, cv2.cv.CV_HOUGH_GRADIENT, 1.2, 100)
-
-    # # ensure at least some circles were found
-    # if circles is not None:
-    #     # convert the (x, y) coordinates and radius of the circles to integers
-    #     circles = np.round(circles[0, :]).astype("int")
- 
-    #     # loop over the (x, y) coordinates and radius of the circles
-    #     for (x, y, r) in circles:
-    #         # draw the circle in the output image, then draw a rectangle
-    #         # corresponding to the center of the circle
-    #         cv2.circle(frame, (x, y), r, (0, 255, 0), 4)
-    #         cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
-
-    # Bitwise-AND mask and original image
-    #res = cv2.bitwise_and(frame,frame, mask= mask)
 
     font = cv2.FONT_HERSHEY_SIMPLEX
     cv2.putText(frame,str(count),(20,440), font, 2,(0,255,0))
     cv2.putText(frame,'x: ' + str(x) + ', y: ' + str(y),(300,30), font, 0.5,(0,0,255))
    
     cv2.imshow('frame',frame)
-    # cv2.imshow('grey',gray)
-    cv2.imshow('mask',mask)
-    #cv2.imshow('closing', closing)
 
-    #cv2.imshow('res',res)
-    # k = cv2.waitKey(5) & 0xFF
-    # if k == 27:
-    #     break
+    cv2.imshow('mask',mask)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
